@@ -6,6 +6,6 @@ namespace Core
 {
     public interface IPageParserService
     {
-        void GetPageStatistics( Uri url );
+        void GetPageStatistics( string urlSite );
     }
 }

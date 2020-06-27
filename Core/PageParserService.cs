@@ -1,6 +1,7 @@
 ﻿using DbRepositories.Data;
 using DbRepositories.Data.Object;
 using Services.PageParserDataProvider;
+using Services.UrlValidator;
 using System;
 using System.Collections.Generic;
 
@@ -18,19 +19,27 @@ namespace Core
 
         }
 
-        public void GetPageStatistics( Uri urlSite )
+        public async void GetPageStatistics( string urlSite )
         {
-            List<WordsStatistic> wordsStatistic = _wordsStatisticRepository.GetWordItems( urlSite.Host, DateTime.Now );
+            Uri validUrlSite = UrlValidator.TryGetValidUrl( urlSite );
+
+            if ( validUrlSite == null )
+            {
+                Console.WriteLine( "Url должен передаваться в формате http://example.com" );
+                throw new Exception( "Переданная строка не является допустимым url" );
+            }
+
+            List<WordsStatistic> wordsStatistic = _wordsStatisticRepository.GetWordItems( validUrlSite.Host, DateTime.Now );
             if ( wordsStatistic.Count == 0 )
             {
-                IEnumerable<WordsStatistic> statistic = _pageParserDataProvider.GetWordsStatistics( urlSite );
+                IEnumerable<WordsStatistic> statistic = await _pageParserDataProvider.GetWordsStatistics( validUrlSite );
                 wordsStatistic.AddRange( statistic );
                 _wordsStatisticRepository.Add( statistic );
             }
 
             foreach ( var item in wordsStatistic )
             {
-                Console.WriteLine( item.UniqueWord + ":" + item.Count );
+                Console.WriteLine( item.UniqueWord + "-" + item.Count );
             }
         }
     }

@@ -9,14 +9,13 @@ namespace Services.FileServiceModule
         {
             string writePath = PathBuilder( domainName );
 
-            Console.WriteLine( writePath );
             try
             {
                 using ( StreamWriter sw = new StreamWriter( writePath, false, System.Text.Encoding.Default ) )
                 {
                     sw.WriteLine( htmlData );
                 }
-                Console.WriteLine( "Запись выполнена" );
+                Console.WriteLine( "Запись в файл с сайта " + domainName + " выполнена" );
             }
             catch ( Exception e )
             {

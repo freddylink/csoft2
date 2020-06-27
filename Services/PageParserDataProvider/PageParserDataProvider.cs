@@ -4,6 +4,7 @@ using Services.PageParserHandler;
 using Services.WebClientModule;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Services.PageParserDataProvider
 {
@@ -15,29 +16,29 @@ namespace Services.PageParserDataProvider
             _pageParserHandler = pageParserHandler;
         }
 
-        public List<WordsStatistic> GetWordsStatistics( Uri urlSite )
+        public async Task<List<WordsStatistic>> GetWordsStatistics( Uri urlSite )
         {
-            string webData = WebModule.DownloadData( urlSite );
+            string webData = await WebSiteLoader.DownloadData( urlSite );
 
             if ( webData == null )
             {
                 Console.WriteLine( "Данная страница пустая" );
                 throw new ArgumentNullException( "Данная страница пустая" );
             }
+
             FileService.SaveData( urlSite.Host, webData );
-            var dict = _pageParserHandler.GetUniqueWords( webData );
+            SortedDictionary<string, int> uniqueWordsDict = _pageParserHandler.GetUniqueWords( webData );
 
             List<WordsStatistic> wordsStatistic = new List<WordsStatistic>();
-            foreach ( var item in dict )
+            foreach ( KeyValuePair<string, int> wordItem in uniqueWordsDict )
             {
-                var el = new WordsStatistic
+                wordsStatistic.Add( new WordsStatistic
                 {
                     SiteUrl = urlSite.Host,
-                    UniqueWord = item.Key,
-                    Count = item.Value,
+                    UniqueWord = wordItem.Key,
+                    Count = wordItem.Value,
                     Timestamp = DateTime.Now.Date
-                };
-                wordsStatistic.Add( el );
+                } );
             }
 
             return wordsStatistic;

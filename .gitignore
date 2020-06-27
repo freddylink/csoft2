@@ -7,3 +7,5 @@
 /PageParser/obj
 /Services/bin
 /Services/obj
+/Services.Tests/bin
+/Services.Tests/obj

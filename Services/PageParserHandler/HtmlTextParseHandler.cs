@@ -1,8 +1,11 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Services.PageParserHandler
@@ -11,8 +14,34 @@ namespace Services.PageParserHandler
     {
         public SortedDictionary<string, int> GetUniqueWords( string webData )
         {
+            /*
+            string validFileAbsolutePath = Path.GetFullPath( Directory.GetCurrentDirectory() + "/test.html", Directory.GetCurrentDirectory() );
+            string validContent = File.ReadAllText( validFileAbsolutePath );
+            webData = validContent;
+            Console.WriteLine( ASCIIEncoding.Unicode.GetByteCount( webData ) );
+            Console.WriteLine("-------");
+            Process proc = Process.GetCurrentProcess();
+            var mem = proc.PrivateMemorySize64;
+            Console.WriteLine( proc.PrivateMemorySize64 );
+            //Console.WriteLine( proc.MaxWorkingSet );
+            long memorySystem = (mem / (1024 * 1024));
+            long memoryFile = (ASCIIEncoding.Unicode.GetByteCount( webData ) / (1024 * 1024));
+            GC.GetTotalMemory( true );
+            Console.WriteLine( memorySystem.ToString() );
+            Console.WriteLine( memoryFile.ToString() );
+            //Console.WriteLine( GC.GetTotalMemory( true ).ToString( "0,0" ) );
+
+            if ( memoryFile > memorySystem )
+            {
+
+            }
+            else
+            {
+
+            }
+            */
             var textResult = SortText( webData );
-            var items = textResult.Split( new[] { ' ', ',', '.', '!', '?', '"', ';', ':', '[', ']', '(', ')', '«', '»', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries );
+            var items = textResult.Split( new[] { ' ', ',', '.', '!', '?', '"', ';', ':', '[', ']', '(', ')', '«', '»', '-', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries );
 
             SortedDictionary<string, int> dict = new SortedDictionary<string, int>();
             foreach ( var item in items )
@@ -49,15 +78,12 @@ namespace Services.PageParserHandler
                 .ToList()
                 .ForEach( n => n.Remove() );
 
-            foreach ( var node in htmlDoc.DocumentNode.DescendantsAndSelf() )
+            foreach ( HtmlNode node in htmlDoc.DocumentNode.DescendantsAndSelf() )
             {
-                if ( node.NodeType == HtmlNodeType.Text )
+                if ( node.NodeType == HtmlNodeType.Text && node.InnerText.Trim() != "" )
                 {
-                    if ( node.InnerText.Trim() != "" )
-                    {
-                        var decodeText = WebUtility.HtmlDecode( node.InnerText.Trim() );
-                        textData.Add( decodeText.ToUpper() );
-                    }
+                    string decodeText = WebUtility.HtmlDecode( node.InnerText.Trim() );
+                    textData.Add( decodeText.ToUpper() );
                 }
             }
 
