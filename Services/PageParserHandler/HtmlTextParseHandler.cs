@@ -1,77 +1,65 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Services.PageParserHandler
 {
     public class HtmlTextParseHandler : IPageParserHandler
     {
+        private readonly string _splitSymbols;
+        private readonly string _replaceSymbols;
+        public HtmlTextParseHandler( IConfiguration configuration )
+        {
+            _splitSymbols = configuration[ "FilterSettings:SplitSymbols" ];
+            _replaceSymbols = configuration[ "FilterSettings:ReplaceSymbols" ];
+        }
+
         public SortedDictionary<string, int> GetUniqueWords( string webData )
         {
-            /*
-            string validFileAbsolutePath = Path.GetFullPath( Directory.GetCurrentDirectory() + "/test.html", Directory.GetCurrentDirectory() );
-            string validContent = File.ReadAllText( validFileAbsolutePath );
-            webData = validContent;
-            Console.WriteLine( ASCIIEncoding.Unicode.GetByteCount( webData ) );
-            Console.WriteLine("-------");
-            Process proc = Process.GetCurrentProcess();
-            var mem = proc.PrivateMemorySize64;
-            Console.WriteLine( proc.PrivateMemorySize64 );
-            //Console.WriteLine( proc.MaxWorkingSet );
-            long memorySystem = (mem / (1024 * 1024));
-            long memoryFile = (ASCIIEncoding.Unicode.GetByteCount( webData ) / (1024 * 1024));
-            GC.GetTotalMemory( true );
-            Console.WriteLine( memorySystem.ToString() );
-            Console.WriteLine( memoryFile.ToString() );
-            //Console.WriteLine( GC.GetTotalMemory( true ).ToString( "0,0" ) );
+            string textData = GetTextDataFromWebData( webData );
+            string[] allWords = textData.Split( _splitSymbols.ToCharArray(), StringSplitOptions.RemoveEmptyEntries );
 
-            if ( memoryFile > memorySystem )
+            SortedDictionary<string, int> uniqueWords = new SortedDictionary<string, int>();
+            Char[] replaceCharArr = _replaceSymbols.ToCharArray();
+
+            foreach ( string word in allWords )
             {
-
-            }
-            else
-            {
-
-            }
-            */
-            var textResult = SortText( webData );
-            var items = textResult.Split( new[] { ' ', ',', '.', '!', '?', '"', ';', ':', '[', ']', '(', ')', '«', '»', '-', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries );
-
-            SortedDictionary<string, int> dict = new SortedDictionary<string, int>();
-            foreach ( var item in items )
-            {
-
-                if ( Regex.IsMatch( item, @"\d" ) )
+                if ( Regex.IsMatch( word, @"\d" ) )
                 {
                     continue;
                 }
 
-                if ( dict.ContainsKey( item ) )
+                string wordReplaced = ReplaceSymbols( word, replaceCharArr );
+
+                //не успел хорошо реализовать случай, когда в строке просто дефис
+                if ( (wordReplaced.Length == 1 && wordReplaced == "-") || wordReplaced.Length == 0 )
                 {
-                    dict[ item ]++;
+                    continue;
+                }
+
+                if ( uniqueWords.ContainsKey( wordReplaced ) )
+                {
+                    uniqueWords[ wordReplaced ]++;
                 }
                 else
                 {
-                    dict.Add( item, 1 );
+                    uniqueWords.Add( wordReplaced, 1 );
                 }
-
             }
 
-            return dict;
+            return uniqueWords;
         }
 
-        private string SortText( string webData )
+        private string GetTextDataFromWebData( string webData )
         {
             HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml( webData );
 
-            var textData = new List<string>();
+            List<string> textData = new List<string>();
 
             htmlDoc.DocumentNode.Descendants()
                 .Where( n => n.Name == "script" || n.Name == "style" )
@@ -88,6 +76,16 @@ namespace Services.PageParserHandler
             }
 
             return String.Join( " ", textData );
+        }
+
+        private string ReplaceSymbols( string word, Char[] replaceCharArr )
+        {
+            foreach ( var item in replaceCharArr )
+            {
+                word = word.Replace( item, ' ' );
+            }
+
+            return word.Trim();
         }
     }
 }

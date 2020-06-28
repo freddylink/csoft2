@@ -2,7 +2,6 @@
 using System.Linq;
 using Xunit;
 
-
 namespace Services.Tests
 {
     public class UrlValidatorTest
@@ -28,7 +27,7 @@ namespace Services.Tests
                 validUrls[ i ] = UrlValidator.UrlValidator.TryGetValidUrl( url );
                 i++;
             }
-            
+
             Assert.DoesNotContain( null, validUrls );
         }
 

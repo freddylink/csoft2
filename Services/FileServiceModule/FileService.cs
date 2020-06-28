@@ -5,15 +5,14 @@ namespace Services.FileServiceModule
 {
     public class FileService
     {
-        public static void SaveData( string domainName, string htmlData )
+        public static void SaveData( string domainName, string webData )
         {
             string writePath = PathBuilder( domainName );
-
             try
             {
                 using ( StreamWriter sw = new StreamWriter( writePath, false, System.Text.Encoding.Default ) )
                 {
-                    sw.WriteLine( htmlData );
+                    sw.WriteLine( webData );
                 }
                 Console.WriteLine( "Запись в файл с сайта " + domainName + " выполнена" );
             }
@@ -25,10 +24,11 @@ namespace Services.FileServiceModule
 
         private static string PathBuilder( string domainName )
         {
-            string path = Directory.GetCurrentDirectory();
+            string pathToDirectory = Directory.GetCurrentDirectory();
             string dateString = DateTime.Now.ToShortDateString();
-            //добавить дату в строку сохранения
-            return path + "\\" + domainName.Replace( ".", "-" ) + "-" + dateString.Replace( ".", "-" ) + ".html";
+            string fileName = domainName.Replace( ".", "-" ) + "-" + dateString.Replace( ".", "-" ) + ".html";
+
+            return Path.Combine( pathToDirectory, fileName );
         }
     }
 }

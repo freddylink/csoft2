@@ -19,7 +19,7 @@ namespace Core
 
         }
 
-        public async void GetPageStatistics( string urlSite )
+        public void GetPageStatistics( string urlSite )
         {
             Uri validUrlSite = UrlValidator.TryGetValidUrl( urlSite );
 
@@ -30,9 +30,10 @@ namespace Core
             }
 
             List<WordsStatistic> wordsStatistic = _wordsStatisticRepository.GetWordItems( validUrlSite.Host, DateTime.Now );
+
             if ( wordsStatistic.Count == 0 )
             {
-                IEnumerable<WordsStatistic> statistic = await _pageParserDataProvider.GetWordsStatistics( validUrlSite );
+                IEnumerable<WordsStatistic> statistic = _pageParserDataProvider.GetWordsStatistics( validUrlSite );
                 wordsStatistic.AddRange( statistic );
                 _wordsStatisticRepository.Add( statistic );
             }

@@ -4,7 +4,6 @@ using Services.PageParserHandler;
 using Services.WebClientModule;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Services.PageParserDataProvider
 {
@@ -16,9 +15,9 @@ namespace Services.PageParserDataProvider
             _pageParserHandler = pageParserHandler;
         }
 
-        public async Task<List<WordsStatistic>> GetWordsStatistics( Uri urlSite )
+        public List<WordsStatistic> GetWordsStatistics( Uri urlSite )
         {
-            string webData = await WebSiteLoader.DownloadData( urlSite );
+            string webData = WebSiteLoader.DownloadData( urlSite );
 
             if ( webData == null )
             {
