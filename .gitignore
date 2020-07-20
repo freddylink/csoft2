@@ -1,0 +1,11 @@
+.vs
+/Core/bin
+/Core/obj
+/DbRepositories/bin
+/DbRepositories/obj
+/PageParser/bin
+/PageParser/obj
+/Services/bin
+/Services/obj
+/Services.Tests/bin
+/Services.Tests/obj
